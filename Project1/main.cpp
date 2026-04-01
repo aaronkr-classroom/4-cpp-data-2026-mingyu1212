@@ -12,32 +12,54 @@
 #include <string>
 #include <stdexcept> // istream& 위해서
 #include <vector>
+#include "Student_info.h"
+#include "grade.h"
 
 using namespace std;
 
 typedef vector<double>::size_type vec_sz;
+typedef vector<Student_info>::size_type si_sz;
 
-istream& read_hw(istream&, vector<double>&); // 함수 원형 정의문
-double grade(double, double, const vector<double>&);
-double grade(double, double, double);
+// 함수 원형 정의문
 double median(vector<double>);
 
 int main(void)
 {
-	// Ask and read student name
-	cout << "First name: ";
-	string name;
-	cin >> name;
-	cout << "Hello, " << name << "!" << endl;
+	// NEW 구조 자료형 선언
+	vector<Student_info> students;
+	Student_info record;
+	string::size_type maxlen = 0;
 
-	// Ask and read midterm, final
-	cout << "Midterm + Fianl grades: ";
-	double midterm, final;
-	cin >> midterm >> final;
+	// 프로그램 설명하기
+	cout << "For every student, enter: " << endl <<
+		"Name Midterm Final HW1 HW2... " << endl;
 
-	// Ask and read HW scores
-	cout << "Enter all HW grades, then EOF";
-	vector<double> homework;
+	while (read(cin, record)) {
+		maxlen = max(maxlen, record.name.size());
+		students.push_back(record);
+	}
+
+	// 학생 정보를 알파벳순으로 정렬
+	sort(students.begin(), students.end(), compare);
+
+	// 모든 학생의 결과를 출력
+	for (si_sz i = 0; i != students.size(); ++i) {
+		// 이름과 오른쪽 공백을 포함하여 maxlen + 1개의 문자를 출력
+		cout << students[i].name <<
+			string(maxlen + 1 - students[i].name.size(), ' ');
+
+		// 최종 점수를 계산하여 출력
+		try {
+			double final_grade = grade(students[i]); // NEW Calc Func - grade()
+			streamsize prec = cout.precision();
+			cout <<  setprecision(3) << final_grade << 
+				setprecision(prec) << endl;
+		}
+		catch(domain_error e) {
+			cout << e.what();
+		}
+		cout << endl;
+	}
 
 	// NEW Function read_hw()
 	read_hw(cin, homework); // 사실 객체 필요해서 참조로 보냄
